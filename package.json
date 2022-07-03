@@ -1,0 +1,38 @@
+{
+  "name": "temp",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "dependencies": {
+    "@types/node": "^18.0.0",
+    "arlocal": "1.1.42",
+    "arweave": "1.11.4",
+    "copyfiles": "^2.4.1",
+    "esbuild": "^0.14.48",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "replace-in-file": "^6.3.5",
+    "rimraf": "^3.0.2",
+    "ts-node": "^10.8.2",
+    "typescript": "^4.7.4",
+    "warp-contracts": "1.0.1"
+  },
+  "scripts": {
+    "build:contracts": "yarn run clean && yarn run build-ts && npm run cp",
+    "build-ts": "npx ts-node contract/build.ts",
+    "clean": "npx rimraf ./dist",
+    "cp": "npx copyfiles -u 1 ./contract/**/*.json dist",
+    "build": "yarn run build:contracts",
+    "deploy": "npx ts-node contract/deploy.ts",
+    "dev": "npx parcel public/index.html"
+  },
+  "devDependencies": {
+    "@types/react": "^18.0.14",
+    "@types/react-dom": "^18.0.5",
+    "constants-browserify": "^1.0.0",
+    "crypto-browserify": "^3.12.0",
+    "events": "^3.3.0",
+    "parcel": "^2.6.2",
+    "stream-browserify": "^3.0.0"
+  }
+}
