@@ -3,6 +3,7 @@ import { WarpNodeFactory, LoggerFactory } from "warp-contracts";
 import fs from "fs";
 import { JWKInterface } from "arweave/node/lib/wallet";
 import path from "path";
+import ArLocal from "arlocal";
 (async () => {
   LoggerFactory.INST.logLevel("error");
   const arweave = Arweave.init({
@@ -13,7 +14,6 @@ import path from "path";
   const warp = WarpNodeFactory.forTesting(arweave);
   const wallet = await arweave.wallets.generate();
   addFunds(arweave, wallet);
-  /**
   const contractSrc = fs.readFileSync(
     path.join(__dirname + "/../dist/init.js"),
     "utf8"
@@ -27,17 +27,15 @@ import path from "path";
     initState: state,
     src: contractSrc,
   });
-  console.log(contractTxId);
-  **/
-  const contractTxId = "DsHwq-Y4Lwvik3Wc2kxKawS_wpsIDAtadEbCklqTpvM";
-  const contract = warp.contract(contractTxId).connect(wallet);
+  const contract = warp.contract(contractTxId.contractTxId).connect(wallet);
   await contract.writeInteraction({
     function: "register",
     text: "arch",
   });
-  mineBlock(arweave);
-  const state = await contract.readState();
-  console.log(state.state);
+  await mineBlock(arweave);
+  const states = await contract.readState();
+  console.log(states.state);
+  console.log(contractTxId.contractTxId);
 })();
 async function addFunds(arweave: Arweave, wallet: JWKInterface) {
   const walletAddress = await arweave.wallets.getAddress(wallet);

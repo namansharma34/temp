@@ -15,7 +15,7 @@
     "rimraf": "^3.0.2",
     "ts-node": "^10.8.2",
     "typescript": "^4.7.4",
-    "warp-contracts": "1.0.1"
+    "warp-contracts": "1.1.7"
   },
   "scripts": {
     "build:contracts": "yarn run clean && yarn run build-ts && npm run cp",

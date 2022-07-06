@@ -1,20 +1,25 @@
-import React, { useEffect, useState } from 'react';
-import { arweave, warp } from './utils/config';
-import * as fdd from './HllvB064_PZSaeoXj4gtX_wdj22WawoyAz5iCuq1uzs.json';
-import { mineBlock } from './utils/mineBlock';
+import React, { useEffect, useState } from "react";
+import { arweave, warp } from "./utils/config";
+import * as fdd from "./HllvB064_PZSaeoXj4gtX_wdj22WawoyAz5iCuq1uzs.json";
+import { mineBlock } from "./utils/mineBlock";
 const App = () => {
-  const contract = warp.contract('DsHwq-Y4Lwvik3Wc2kxKawS_wpsIDAtadEbCklqTpvM').connect(fdd);
+  const contract = warp
+    .contract("Qripm7Rvzi8SebhWrvPQ1m8LAyrdEeHeQAUnIsA-wQ4")
+    .connect(fdd);
   const [contractState, setContractState] = useState({});
-  const [inputValue, setInputValue] = useState('');
+  const [inputValue, setInputValue] = useState("");
   const handleInputChange = (e: any) => {
     setInputValue(e.target.value);
   };
   const handleClickButton = async () => {
-    const txId = await contract.writeInteraction({ function: 'register', text: inputValue });
+    const txId = await contract.writeInteraction({
+      function: "register",
+      text: inputValue,
+    });
     console.log(txId);
     await mineBlock(arweave);
     await fetchContractData();
-    setInputValue('');
+    setInputValue("");
   };
   async function fetchContractData() {
     const result = await contract.readState();

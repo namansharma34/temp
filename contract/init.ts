@@ -1,5 +1,5 @@
 interface State {
-  db: Array<string>;
+  db: Array<{ name: String; time: String }>;
 }
 interface Action {
   input: {
@@ -10,7 +10,9 @@ interface Action {
 }
 export function handle(state: State, action: Action) {
   if (action.input.function === "register") {
-    state.db.push(action.input.text);
+    //@ts-ignore
+    const time = SmartWeave.block.timestamp;
+    state.db.push({ name: action.input.text, time: String(time) });
     return { state };
   }
   if (action.input.function === "get") {

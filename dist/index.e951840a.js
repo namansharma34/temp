@@ -27106,23 +27106,70 @@ var _react = require("react");
 var _reactDefault = parcelHelpers.interopDefault(_react);
 var _config = require("./utils/config");
 var _hllvB064PZSaeoXj4GtXWdj22WawoyAz5ICuq1UzsJson = require("./HllvB064_PZSaeoXj4gtX_wdj22WawoyAz5iCuq1uzs.json");
+var _mineBlock = require("./utils/mineBlock");
+var _s = $RefreshSig$();
 const App = ()=>{
-    const contract = (0, _config.warp).contract("DsHwq-Y4Lwvik3Wc2kxKawS_wpsIDAtadEbCklqTpvM").connect(_hllvB064PZSaeoXj4GtXWdj22WawoyAz5ICuq1UzsJson);
-    contract.writeInteraction({
-        function: "register",
-        text: "memCached"
-    }).then().catch((err)=>console.log(err));
-    contract.readState().then((e)=>console.log(e.state));
+    _s();
+    const contract = (0, _config.warp).contract("Qripm7Rvzi8SebhWrvPQ1m8LAyrdEeHeQAUnIsA-wQ4").connect(_hllvB064PZSaeoXj4GtXWdj22WawoyAz5ICuq1UzsJson);
+    const [contractState, setContractState] = (0, _react.useState)({});
+    const [inputValue, setInputValue] = (0, _react.useState)("");
+    const handleInputChange = (e)=>{
+        setInputValue(e.target.value);
+    };
+    const handleClickButton = async ()=>{
+        const txId = await contract.writeInteraction({
+            function: "register",
+            text: inputValue
+        });
+        console.log(txId);
+        await (0, _mineBlock.mineBlock)((0, _config.arweave));
+        await fetchContractData();
+        setInputValue("");
+    };
+    async function fetchContractData() {
+        const result = await contract.readState();
+        setContractState(result);
+    }
+    (0, _react.useEffect)(()=>{
+        fetchContractData();
+    }, []);
     return /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _jsxDevRuntime.Fragment), {
-        children: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("h1", {
-            children: "dsf"
-        }, void 0, false, {
-            fileName: "src/App.tsx",
-            lineNumber: 15,
-            columnNumber: 7
-        }, undefined)
-    }, void 0, false);
+        children: [
+            /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
+                children: JSON.stringify(contractState)
+            }, void 0, false, {
+                fileName: "src/App.tsx",
+                lineNumber: 34,
+                columnNumber: 7
+            }, undefined),
+            /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
+                children: [
+                    /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("input", {
+                        value: inputValue,
+                        onChange: handleInputChange
+                    }, void 0, false, {
+                        fileName: "src/App.tsx",
+                        lineNumber: 36,
+                        columnNumber: 9
+                    }, undefined),
+                    /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("button", {
+                        onClick: handleClickButton,
+                        children: "Register"
+                    }, void 0, false, {
+                        fileName: "src/App.tsx",
+                        lineNumber: 37,
+                        columnNumber: 9
+                    }, undefined)
+                ]
+            }, void 0, true, {
+                fileName: "src/App.tsx",
+                lineNumber: 35,
+                columnNumber: 7
+            }, undefined)
+        ]
+    }, void 0, true);
 };
+_s(App, "jABZuhf0I0SOL90UOcXR5iqPwa4=");
 _c = App;
 exports.default = App;
 var _c;
@@ -27133,7 +27180,7 @@ $RefreshReg$(_c, "App");
   window.$RefreshReg$ = prevRefreshReg;
   window.$RefreshSig$ = prevRefreshSig;
 }
-},{"react/jsx-dev-runtime":"iTorj","react":"21dqq","./utils/config":"dAjWq","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"km3Ru","./HllvB064_PZSaeoXj4gtX_wdj22WawoyAz5iCuq1uzs.json":"8QAzT"}],"dAjWq":[function(require,module,exports) {
+},{"react/jsx-dev-runtime":"iTorj","react":"21dqq","./utils/config":"dAjWq","./HllvB064_PZSaeoXj4gtX_wdj22WawoyAz5iCuq1uzs.json":"8QAzT","./utils/mineBlock":"2Kt4r","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"km3Ru"}],"dAjWq":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "arweave", ()=>arweave);
@@ -37683,12 +37730,26 @@ var _wasmSrc = require("./wasm/WasmSrc");
 var _transaction = require("arweave/node/lib/transaction");
 var _transactionDefault = parcelHelpers.interopDefault(_transaction);
 var Buffer = require("buffer").Buffer;
-class WarpGatewayContractDefinitionLoader extends (0, _contractDefinitionLoader.ContractDefinitionLoader) {
+class WarpGatewayContractDefinitionLoader {
     constructor(baseUrl, arweave, cache){
-        super(arweave, cache);
         this.baseUrl = baseUrl;
+        this.cache = cache;
         this.rLogger = (0, _.LoggerFactory).INST.create("WarpGatewayContractDefinitionLoader");
         this.baseUrl = (0, _.stripTrailingSlash)(baseUrl);
+        this.contractDefinitionLoader = new (0, _contractDefinitionLoader.ContractDefinitionLoader)(arweave, cache);
+        this.arweaveWrapper = new (0, _.ArweaveWrapper)(arweave);
+    }
+    async load(contractTxId, evolvedSrcTxId) {
+        var _a, _b, _c;
+        if (!evolvedSrcTxId && ((_a = this.cache) === null || _a === void 0 ? void 0 : _a.contains(contractTxId))) {
+            this.rLogger.debug("WarpGatewayContractDefinitionLoader: Hit from cache!");
+            return Promise.resolve((_b = this.cache) === null || _b === void 0 ? void 0 : _b.get(contractTxId));
+        }
+        const benchmark = (0, _.Benchmark).measure();
+        const contract = await this.doLoad(contractTxId, evolvedSrcTxId);
+        this.rLogger.info(`Contract definition loaded in: ${benchmark.elapsed()}`);
+        (_c = this.cache) === null || _c === void 0 || _c.put(contractTxId, contract);
+        return contract;
     }
     async doLoad(contractTxId, forcedSrcTxId) {
         try {
@@ -37715,8 +37776,11 @@ class WarpGatewayContractDefinitionLoader extends (0, _contractDefinitionLoader.
             return result;
         } catch (e) {
             this.rLogger.warn("Falling back to default contracts loader", e);
-            return await super.doLoad(contractTxId, forcedSrcTxId);
+            return await this.contractDefinitionLoader.doLoad(contractTxId, forcedSrcTxId);
         }
+    }
+    async loadContractSource(contractSrcTxId) {
+        return await this.contractDefinitionLoader.loadContractSource(contractSrcTxId);
     }
 }
 
@@ -42878,8 +42942,8 @@ exports.constants = {
 
 },{"randombytes":"8hjhE","create-hash":"2WyL8","create-hmac":"k1utz","browserify-sign/algos":"busIB","pbkdf2":"g38Hg","browserify-cipher":"d4idn","diffie-hellman":"hwD3y","browserify-sign":"jbRNy","create-ecdh":"9Rcg1","public-encrypt":"h9Rdh","randomfill":"k3tsT"}],"8hjhE":[function(require,module,exports) {
 "use strict";
-var process = require("process");
 var global = arguments[3];
+var process = require("process");
 // limit of Crypto.getRandomValues()
 // https://developer.mozilla.org/en-US/docs/Web/API/Crypto/getRandomValues
 var MAX_BYTES = 65536;
@@ -61781,8 +61845,8 @@ function compare(a, b) {
 
 },{"parse-asn1":"4Szbv","./mgf":"e2JgG","./xor":"iaxu0","bn.js":"VopIn","browserify-rsa":"e594P","create-hash":"2WyL8","./withPublic":"fFkPV","safe-buffer":"eW7r9"}],"k3tsT":[function(require,module,exports) {
 "use strict";
-var global = arguments[3];
 var process = require("process");
+var global = arguments[3];
 function oldBrowser() {
     throw new Error("secure random number generation not supported by this browser\nuse chrome, FireFox or Internet Explorer 11");
 }
@@ -66431,8 +66495,8 @@ module.exports = {
 })(module, this);
 
 },{"buffer":"jhUEF"}],"ahVaM":[function(require,module,exports) {
-var process = require("process");
 var global = arguments[3];
+var process = require("process");
 /**
  * [js-sha256]{@link https://github.com/emn178/js-sha256}
  *
@@ -66921,8 +66985,8 @@ var global = arguments[3];
 })();
 
 },{"process":"d5jf4"}],"aWoFA":[function(require,module,exports) {
-var global = arguments[3];
 var process = require("process");
+var global = arguments[3];
 /*
  * [js-sha512]{@link https://github.com/emn178/js-sha512}
  *
@@ -74465,12 +74529,13 @@ class SourceImpl {
         // note: in case of useBundler = true, we're posting both
         // src tx and contract tx in one request.
         let responseOk = true;
+        let response;
         if (!useBundler) {
-            const response = await this.arweave.transactions.post(srcTx);
+            response = await this.arweave.transactions.post(srcTx);
             responseOk = response.status === 200 || response.status === 208;
         }
         if (responseOk) return srcTx;
-        else throw new Error(`Unable to write Contract Source`);
+        else throw new Error(`Unable to write Contract Source. Arweave responded with status ${response.status}: ${response.statusText}`);
     }
     isGoModule(moduleImports) {
         return moduleImports.some((moduleImport)=>{
@@ -76138,7 +76203,7 @@ class DefaultCreateContract {
         this.deployFromSourceTx = this.deployFromSourceTx.bind(this);
     }
     async deploy(contractData, useBundler = false) {
-        const { wallet , initState , tags , transfer  } = contractData;
+        const { wallet , initState , tags , transfer , data  } = contractData;
         const source = new (0, _index2.SourceImpl)(this.arweave);
         const srcTx = await source.save(contractData, wallet, useBundler);
         this.logger.debug("Creating new contract");
@@ -76147,19 +76212,20 @@ class DefaultCreateContract {
             wallet,
             initState,
             tags,
-            transfer
+            transfer,
+            data
         }, useBundler, srcTx);
     }
     async deployFromSourceTx(contractData, useBundler = false, srcTx = null) {
         this.logger.debug("Creating new contract from src tx");
-        const { wallet , srcTxId , initState , tags , transfer  } = contractData;
+        const { wallet , srcTxId , initState , tags , transfer , data  } = contractData;
         let contractTX = await this.arweave.createTransaction({
-            data: initState
+            data: (data === null || data === void 0 ? void 0 : data.body) || initState
         }, wallet);
         if (+(transfer === null || transfer === void 0 ? void 0 : transfer.winstonQty) > 0 && transfer.target.length) {
             this.logger.debug("Creating additional transaction with AR transfer", transfer);
             contractTX = await this.arweave.createTransaction({
-                data: initState,
+                data: (data === null || data === void 0 ? void 0 : data.body) || initState,
                 target: transfer.target,
                 quantity: transfer.winstonQty
             }, wallet);
@@ -76169,19 +76235,26 @@ class DefaultCreateContract {
         contractTX.addTag((0, _index.SmartWeaveTags).APP_VERSION, "0.3.0");
         contractTX.addTag((0, _index.SmartWeaveTags).CONTRACT_SRC_TX_ID, srcTxId);
         contractTX.addTag((0, _index.SmartWeaveTags).SDK, "RedStone");
-        contractTX.addTag((0, _index.SmartWeaveTags).CONTENT_TYPE, "application/json");
+        if (data) {
+            contractTX.addTag((0, _index.SmartWeaveTags).CONTENT_TYPE, data["Content-Type"]);
+            contractTX.addTag((0, _index.SmartWeaveTags).INIT_STATE, initState);
+        } else contractTX.addTag((0, _index.SmartWeaveTags).CONTENT_TYPE, "application/json");
         await this.arweave.transactions.sign(contractTX, wallet);
         let responseOk;
+        let response;
         if (useBundler) {
             const result = await this.post(contractTX, srcTx);
             this.logger.debug(result);
             responseOk = true;
         } else {
-            const response = await this.arweave.transactions.post(contractTX);
+            response = await this.arweave.transactions.post(contractTX);
             responseOk = response.status === 200 || response.status === 208;
         }
-        if (responseOk) return contractTX.id;
-        else throw new Error(`Unable to write Contract`);
+        if (responseOk) return {
+            contractTxId: contractTX.id,
+            srcTxId
+        };
+        else throw new Error(`Unable to write Contract. Arweave responded with status ${response.status}: ${response.statusText}`);
     }
     async post(contractTx, srcTx = null) {
         let body = {
@@ -76201,7 +76274,7 @@ class DefaultCreateContract {
             }
         });
         if (response.ok) return response.json();
-        else throw new Error(`Error while posting contract ${response.statusText}`);
+        else throw new Error(`Error while posting contract. Sequencer responded with status ${response.status} ${response.statusText}`);
     }
 }
 
@@ -76335,17 +76408,6 @@ class SmartWeaveGlobal {
             crypto: arweave.crypto
         };
         this.evaluationOptions = evaluationOptions;
-        this.arweave.wallets.getBalance = async (address)=>{
-            if (!this._activeTx) throw new Error("Cannot read balance - active tx is not set.");
-            if (!this.block.height) throw new Error("Cannot read balance - block height not set.");
-            // http://nyc-1.dev.arweave.net:1984/block/height/914387/wallet/M-mpNeJbg9h7mZ-uHaNsa5jwFFRAq0PsTkNWXJ-ojwI/balance
-            return await fetch(`${evaluationOptions.walletBalanceUrl}block/height/${this.block.height}/wallet/${address}/balance`).then((res)=>{
-                return res.ok ? res.text() : Promise.reject(res);
-            }).catch((error)=>{
-                var _a;
-                throw new Error(`Unable to read wallet balance. ${error.status}. ${(_a = error.body) === null || _a === void 0 ? void 0 : _a.message}`);
-            });
-        };
         this.contract = contract;
         this.transaction = new Transaction(this);
         this.block = new Block(this);
@@ -76602,7 +76664,18 @@ function unpackTags(tx) {
     return result;
 }
 
-},{"..":"72MRr","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"km3Ru":[function(require,module,exports) {
+},{"..":"72MRr","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"8QAzT":[function(require,module,exports) {
+module.exports = JSON.parse('{"kty":"RSA","n":"yc5KZGHHQOnfbBHgwoId2V0Q3t_VyIjCpmDrOjwxgyQbF1OG7jKQKNrT__nO6prSvReCcP7B-yrDCYTwf452UErdq70-okH2De2Tv64JhPjWgEPku7d97p_6t6Fxqtg0xiQrUyaTOYcE633aTqYgV7HTAYguJnBRsPnDN_U5sJXaCkhpvNAxYgxdPo00uY-xhuYtmv9VV4CXB6KSUi_ua7wMiz1u6rmWWwhFXve5KKAkS2VfRhS7QjKpbB5iDniVNZdwyn8caPaUu-m5bt9T9zoIs8gTHuEcHctg2wYdwzAFhVEoczPrXQwUB548uUhkMk4z1FrzyUmvnv8jJaNbW0nes7ny9zrsBtBMHL9fGo-kwC9JIFyB2fvmtf1XKT4AyxvSxIDsBCBgI6kWiYhP24gdYbiIro01Nw1JQQcw2xvSxIxyyKkaPUZ4gVc6nuxB2-RY54t1sKanj931ecu0zzCEd_tmLTkde7xDZ186ScLk9KQrfeUOTfhhoPGp7zH98zMTpW8q5PRxhBTdyG_hJlKwAVTO0XH2LDBFhIq1atPBwCq3bzyM286__tBKQgxwJjrDRhDP6IzioJWJ1-R5x7vhoF-11BDkQNnzgIMDFLiL2X9wp1tyZgmqMwwRmW0RJ485GDzz-KX2LHZGoiUBY-RYCKl2B9l5PVpe8kE1cIE","e":"AQAB","d":"B-eLpGjsDA_dD3eXzSaZkrUBfylXT1aEAU5UiGBpNBDK-tvrshLK8L65hRI815We4Yc1NcXUxUjEgO_zF5v16Gk2S47LEEHzKFKA8gYYG1w_0qBWKkAir6EWifDJ6f4z-vrZs5UUOTGfsLWqQmBhbe3qLOovnJPTr1HpIpz5WIBWHQb_FUU2WffQAy42vXnyYy1K5gJQTnAb-lGU16FG_nNMLnwGhy0jxYcKaJDdcMjtAwMCe1U-jHY9ip2aC6UPexzmbxgRfc8CvmWGPOCEgm-Efb49eX0pw8T-kzWnHskXvkQSiIilFGzvr-izyjIaspm7j_rMB7taJKkrsEK4xkXCj7l64NX4xFB-H7s2bgnIufoqJGh1x9FWGAuYVV4SUrq7qoNXaXbtKQOk6okfRdqYx_TFKIrXFZQuq-N5PGTsLKfRe-V20TEx5snsA241iYUOXcjmZGQBKwrwsL4GVTW7s_nqbLMe2szCN9AHjAtIm1JlWo3tDrQSogal9cOx_ETwXoimCMBIiBI-2tTpDDj97IwXdhsuSFjlBatk6e_s6oM1qoX1U5vPYd_UJByiVCgRWLVSK3VF2jQqDOvMLCNImVWIzO-iZml8dU6VoWnzrIDAYxKSkYEmwax0sBZCldDcI4LuW5_d_0q7WMUtKnGxU2Jdt02bpWVFFXT8lkE","p":"81JXwxqaeNtWtFQx69rwGwIGpea484VmrSnDuSaeRVnRF9RbEW2-6I5Uq13rdwjUX7vMK5RtCfG2kk-weAp4A0t5sQsMLyiCFlt5mY0AhnEFLhVTpNzw4KQQOuPUhEdkGv9tgQ5N7TMCOCgToGRIzKqOFTg5BiOryUwhr9NfOGDs_Z9y76BjZfsWyd1BnQvK7K5RSELTKj079mmeFgbHCWcCQFte-bFlppwPoBGWKO4X3u73hLDPd-9Caw9XdmEp0LwjYozmOohf_CojREsaC6k-iC7IFdf7TvryNA7lf-qhwWBFqIfwhq81kZvDltiz-Bkka6cTzV1eWE-NZV3dmQ","q":"1FIrfh1xHg2q5cXU88_Vd3OT2cCwWbWEP-M0Hg5XEpy5fIZQzVgYG4jQaCMbuFb8mYIjznarBj4srs7f0_MKbCSavUYOjp3LisGU-O-aYu1JvPUCLDBOPoc7z8X7-G-Wwg5-f7BE3UNW8wBxigtZvGvOEziVnzrAY2hCy10NqnRwU4IDID6saFato6rA42ZybngCnyUnmluKfIoq08OMq3Qg7qFNCFUSg_14l3AGqbjTx3wSC8jbG2bnfSCKBN_g48r5VedcfcR82ej_mMdWXcrssyePyxL6w28-7YP-uh9vOKjRE6_j_5oFev4Xcop1MpONaOFvk746EUVGIr5rKQ","dp":"LR_mOr6iSyuSRtsebvkpcjjL9tR1FGR3CEIolBu_Wmkvx9WQFgleUE6lESrX0jmG-UIguSxLlH6JN1UkCv8WBrZmmRjNZ6mBhpfsUze9EzG-ni9CVd7LpT2H7QP3k5iRzhf0vOxkM0s0bCmyihpPDfXLZ9AHc0YGQ8ykqrDuhcwj5108uYfrJyyLq2AnHPLk7UPeuyH5e2njxu0LblZPb0T1O-42DOSDT4S9uRfJ20lcj_GNYcRQlZN_o88yjzexw45AmbQ7tjs4YdGGvNGYwPTgLe1PGg32A02ywUjJ8xEWcoBiKsEbMD8qFhjnCwChT6-J-5T-rSVVq9cFB_mCcQ","dq":"vA43pZFwQn06lB-AeZ7o5M9C8kigKiUDCQ81dzWeW8bi52-UG_zeBW1Noh8Oi1zIiTLighlLa9EgBIkJaRJIdfaJ9AEcHaeXw8OoLkESznJ7sFiWXws-ElX3XRVwEuDLeAAcfP5kUFI3ri4DYpChH6mgsheZNpp0Etgi6Tr3QrW1U9HA8Qtx60xyqZcxF3kC--Nh9xGSnT5dT-eU_VGjw6ytCo9lym6HYs7bw84eqK8jLPowha2WnBOuD38FoEGnUDvUUgkFPAQPzXZ5BRnx3ktBEYGF9AlQgE-FPhx-Pt5exaGI5dYRrLAAEKsDm5kVKwHT60RZblO73NYtw9JC2Q","qi":"okH5vwuqxOoBVxdE1yxBunLtB8FTf1v_eIoqLSbOjYAUsnK2IU_3h-ouYZXX6d5ifgl0rt-EENqfl1fzaXlCndE9fQSM--gsJUXDKr7TxYXs1hDJ05bm2-V9HFbUTYFvK0ZZN1tHkhlK8v5nSsGOpPzvFBkJpjSQ0EhfGX0cNm99Pv6KED11kSMutVQ0dbBbwOVYpk8SWCPY8Rarrs4Gnge2Ww8-FaAwKNGxSwKpwWExO1vou7XsIwtOHcHBorv8LbrHIQjghRtMLsqE8WDfp0qxeZ4IgUIMdhle1sVbV7dETAbCkfs5lyO00lU-dWZ_3IXfl6ECBgFadEfpE1pWtQ"}');
+
+},{}],"2Kt4r":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "mineBlock", ()=>mineBlock);
+async function mineBlock(arweave) {
+    await arweave.api.get("mine");
+}
+
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"km3Ru":[function(require,module,exports) {
 "use strict";
 var Refresh = require("react-refresh/runtime");
 function debounce(func, delay) {
@@ -76722,9 +76795,6 @@ function registerExportsForReactRefresh(module) {
     }
 }
 
-},{"react-refresh/runtime":"786KC"}],"8QAzT":[function(require,module,exports) {
-module.exports = JSON.parse('{"kty":"RSA","n":"yc5KZGHHQOnfbBHgwoId2V0Q3t_VyIjCpmDrOjwxgyQbF1OG7jKQKNrT__nO6prSvReCcP7B-yrDCYTwf452UErdq70-okH2De2Tv64JhPjWgEPku7d97p_6t6Fxqtg0xiQrUyaTOYcE633aTqYgV7HTAYguJnBRsPnDN_U5sJXaCkhpvNAxYgxdPo00uY-xhuYtmv9VV4CXB6KSUi_ua7wMiz1u6rmWWwhFXve5KKAkS2VfRhS7QjKpbB5iDniVNZdwyn8caPaUu-m5bt9T9zoIs8gTHuEcHctg2wYdwzAFhVEoczPrXQwUB548uUhkMk4z1FrzyUmvnv8jJaNbW0nes7ny9zrsBtBMHL9fGo-kwC9JIFyB2fvmtf1XKT4AyxvSxIDsBCBgI6kWiYhP24gdYbiIro01Nw1JQQcw2xvSxIxyyKkaPUZ4gVc6nuxB2-RY54t1sKanj931ecu0zzCEd_tmLTkde7xDZ186ScLk9KQrfeUOTfhhoPGp7zH98zMTpW8q5PRxhBTdyG_hJlKwAVTO0XH2LDBFhIq1atPBwCq3bzyM286__tBKQgxwJjrDRhDP6IzioJWJ1-R5x7vhoF-11BDkQNnzgIMDFLiL2X9wp1tyZgmqMwwRmW0RJ485GDzz-KX2LHZGoiUBY-RYCKl2B9l5PVpe8kE1cIE","e":"AQAB","d":"B-eLpGjsDA_dD3eXzSaZkrUBfylXT1aEAU5UiGBpNBDK-tvrshLK8L65hRI815We4Yc1NcXUxUjEgO_zF5v16Gk2S47LEEHzKFKA8gYYG1w_0qBWKkAir6EWifDJ6f4z-vrZs5UUOTGfsLWqQmBhbe3qLOovnJPTr1HpIpz5WIBWHQb_FUU2WffQAy42vXnyYy1K5gJQTnAb-lGU16FG_nNMLnwGhy0jxYcKaJDdcMjtAwMCe1U-jHY9ip2aC6UPexzmbxgRfc8CvmWGPOCEgm-Efb49eX0pw8T-kzWnHskXvkQSiIilFGzvr-izyjIaspm7j_rMB7taJKkrsEK4xkXCj7l64NX4xFB-H7s2bgnIufoqJGh1x9FWGAuYVV4SUrq7qoNXaXbtKQOk6okfRdqYx_TFKIrXFZQuq-N5PGTsLKfRe-V20TEx5snsA241iYUOXcjmZGQBKwrwsL4GVTW7s_nqbLMe2szCN9AHjAtIm1JlWo3tDrQSogal9cOx_ETwXoimCMBIiBI-2tTpDDj97IwXdhsuSFjlBatk6e_s6oM1qoX1U5vPYd_UJByiVCgRWLVSK3VF2jQqDOvMLCNImVWIzO-iZml8dU6VoWnzrIDAYxKSkYEmwax0sBZCldDcI4LuW5_d_0q7WMUtKnGxU2Jdt02bpWVFFXT8lkE","p":"81JXwxqaeNtWtFQx69rwGwIGpea484VmrSnDuSaeRVnRF9RbEW2-6I5Uq13rdwjUX7vMK5RtCfG2kk-weAp4A0t5sQsMLyiCFlt5mY0AhnEFLhVTpNzw4KQQOuPUhEdkGv9tgQ5N7TMCOCgToGRIzKqOFTg5BiOryUwhr9NfOGDs_Z9y76BjZfsWyd1BnQvK7K5RSELTKj079mmeFgbHCWcCQFte-bFlppwPoBGWKO4X3u73hLDPd-9Caw9XdmEp0LwjYozmOohf_CojREsaC6k-iC7IFdf7TvryNA7lf-qhwWBFqIfwhq81kZvDltiz-Bkka6cTzV1eWE-NZV3dmQ","q":"1FIrfh1xHg2q5cXU88_Vd3OT2cCwWbWEP-M0Hg5XEpy5fIZQzVgYG4jQaCMbuFb8mYIjznarBj4srs7f0_MKbCSavUYOjp3LisGU-O-aYu1JvPUCLDBOPoc7z8X7-G-Wwg5-f7BE3UNW8wBxigtZvGvOEziVnzrAY2hCy10NqnRwU4IDID6saFato6rA42ZybngCnyUnmluKfIoq08OMq3Qg7qFNCFUSg_14l3AGqbjTx3wSC8jbG2bnfSCKBN_g48r5VedcfcR82ej_mMdWXcrssyePyxL6w28-7YP-uh9vOKjRE6_j_5oFev4Xcop1MpONaOFvk746EUVGIr5rKQ","dp":"LR_mOr6iSyuSRtsebvkpcjjL9tR1FGR3CEIolBu_Wmkvx9WQFgleUE6lESrX0jmG-UIguSxLlH6JN1UkCv8WBrZmmRjNZ6mBhpfsUze9EzG-ni9CVd7LpT2H7QP3k5iRzhf0vOxkM0s0bCmyihpPDfXLZ9AHc0YGQ8ykqrDuhcwj5108uYfrJyyLq2AnHPLk7UPeuyH5e2njxu0LblZPb0T1O-42DOSDT4S9uRfJ20lcj_GNYcRQlZN_o88yjzexw45AmbQ7tjs4YdGGvNGYwPTgLe1PGg32A02ywUjJ8xEWcoBiKsEbMD8qFhjnCwChT6-J-5T-rSVVq9cFB_mCcQ","dq":"vA43pZFwQn06lB-AeZ7o5M9C8kigKiUDCQ81dzWeW8bi52-UG_zeBW1Noh8Oi1zIiTLighlLa9EgBIkJaRJIdfaJ9AEcHaeXw8OoLkESznJ7sFiWXws-ElX3XRVwEuDLeAAcfP5kUFI3ri4DYpChH6mgsheZNpp0Etgi6Tr3QrW1U9HA8Qtx60xyqZcxF3kC--Nh9xGSnT5dT-eU_VGjw6ytCo9lym6HYs7bw84eqK8jLPowha2WnBOuD38FoEGnUDvUUgkFPAQPzXZ5BRnx3ktBEYGF9AlQgE-FPhx-Pt5exaGI5dYRrLAAEKsDm5kVKwHT60RZblO73NYtw9JC2Q","qi":"okH5vwuqxOoBVxdE1yxBunLtB8FTf1v_eIoqLSbOjYAUsnK2IU_3h-ouYZXX6d5ifgl0rt-EENqfl1fzaXlCndE9fQSM--gsJUXDKr7TxYXs1hDJ05bm2-V9HFbUTYFvK0ZZN1tHkhlK8v5nSsGOpPzvFBkJpjSQ0EhfGX0cNm99Pv6KED11kSMutVQ0dbBbwOVYpk8SWCPY8Rarrs4Gnge2Ww8-FaAwKNGxSwKpwWExO1vou7XsIwtOHcHBorv8LbrHIQjghRtMLsqE8WDfp0qxeZ4IgUIMdhle1sVbV7dETAbCkfs5lyO00lU-dWZ_3IXfl6ECBgFadEfpE1pWtQ"}');
-
-},{}]},["1xC6H","4fMKp","bcO2o"], "bcO2o", "parcelRequired84b")
+},{"react-refresh/runtime":"786KC"}]},["1xC6H","4fMKp","bcO2o"], "bcO2o", "parcelRequired84b")
 
 //# sourceMappingURL=index.e951840a.js.map
